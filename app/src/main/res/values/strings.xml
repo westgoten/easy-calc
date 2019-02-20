@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Easy Calc</string>
+
+    <!-- Some button labels -->
+    <string name="clear">C</string>
+    <string name="number_zero">0</string>
+    <string name="equal_sign">=</string>
 </resources>
