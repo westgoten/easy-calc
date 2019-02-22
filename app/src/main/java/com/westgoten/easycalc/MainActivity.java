@@ -2,8 +2,10 @@ package com.westgoten.easycalc;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
 import androidx.gridlayout.widget.GridLayout;
@@ -43,6 +45,17 @@ public class MainActivity extends AppCompatActivity {
 
         setButtonsInformation();
         addRemainingButtonsToGrid();
+
+        ImageButton backspaceButton = findViewById(R.id.backspace_button);
+        backspaceButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String expression = resultView.getText().toString();
+                int expressionLength = expression.length();
+                if (expressionLength > 0)
+                    resultView.setText(expression.substring(0, expressionLength - 1));
+            }
+        });
     }
 
     private void addRemainingButtonsToGrid() {
@@ -66,22 +79,24 @@ public class MainActivity extends AppCompatActivity {
                             //TO DO: Invalid Operation Report
                         } else {
                             pattern = Pattern.compile("^[\\+\\-]\\d+\\.\\d+E[\\+\\-]?\\d+|^[\\+\\-]\\d+E[\\+\\-]?\\d+|\\d+\\.\\d+E[\\+\\-]?\\d+|\\d+E[\\+\\-]?\\d+|^[\\+\\-]\\d+\\.\\d+|^[\\+\\-]\\d+|\\d+\\.\\d+|\\d+");
-                            matcher.reset();
                             matcher.usePattern(pattern);
+                            matcher.reset();
 
                             List<String> valuesAndOperationsList = new ArrayList<>();
+                            int expressionLength = expression.length();
                             while (matcher.find()) {
                                 valuesAndOperationsList.add(matcher.group());
                                 int end = matcher.end();
-                                if (end < valuesAndOperationsList.size())
-                                    valuesAndOperationsList.add(expression.substring(end, end+1));
+                                if (end < expressionLength)
+                                    valuesAndOperationsList.add(expression.substring(end, end + 1));
+                                else
+                                    break;
                             }
 
                             while (valuesAndOperationsList.size() > 1) {
                                 if (valuesAndOperationsList.contains(getString(R.string.times)) ||
                                         valuesAndOperationsList.contains(getString(R.string.division))) {
-                                    // TO DO: Synchronize loop increment and list shrinking
-                                    for (int i = 1; i < valuesAndOperationsList.size(); i += 2) {
+                                    for (int i = 1; i < valuesAndOperationsList.size();) {
                                         String operation = valuesAndOperationsList.get(i);
                                         double leftValue, rightValue, parcialResult;
 
@@ -90,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
                                             rightValue = Double.parseDouble(valuesAndOperationsList.get(i+1));
                                             parcialResult = leftValue * rightValue;
                                             addParcialResultToList(parcialResult, i, valuesAndOperationsList);
+                                            continue;
 
                                         } else if (operation.equals(getString(R.string.division))) {
                                             leftValue = Double.parseDouble(valuesAndOperationsList.get(i-1));
@@ -101,14 +117,46 @@ public class MainActivity extends AppCompatActivity {
                                                 parcialResult = leftValue / rightValue;
                                                 addParcialResultToList(parcialResult, i, valuesAndOperationsList);
                                             }
+                                            continue;
                                         }
+
+                                        i += 2;
                                     }
                                 }
 
                                 if (valuesAndOperationsList.contains(getString(R.string.plus)) ||
                                         valuesAndOperationsList.contains(getString(R.string.minus))) {
-                                    // TO DO: Sum and subtraction calculations
+                                    for (int i = 1; i < valuesAndOperationsList.size();) {
+                                        String operation = valuesAndOperationsList.get(i);
+                                        double leftValue, rightValue, parcialResult;
+
+                                        if (operation.equals(getString(R.string.plus))) {
+                                            leftValue = Double.parseDouble(valuesAndOperationsList.get(i-1));
+                                            rightValue = Double.parseDouble(valuesAndOperationsList.get(i+1));
+                                            parcialResult = leftValue + rightValue;
+                                            addParcialResultToList(parcialResult, i, valuesAndOperationsList);
+                                            continue;
+                                        } else if (operation.equals(getString(R.string.minus))) {
+                                            leftValue = Double.parseDouble(valuesAndOperationsList.get(i-1));
+                                            rightValue = Double.parseDouble(valuesAndOperationsList.get(i+1));
+                                            parcialResult = leftValue - rightValue;
+                                            addParcialResultToList(parcialResult, i, valuesAndOperationsList);
+                                            continue;
+                                        }
+
+                                        i += 2;
+                                    }
                                 }
+                            }
+
+                            if (!valuesAndOperationsList.isEmpty()) {
+                                String result = valuesAndOperationsList.get(0);
+                                int afterPointIndex = result.indexOf(getString(R.string.point)) + 1;
+                                String afterPointSequence = result.substring(afterPointIndex);
+                                if (afterPointSequence.equals("0"))
+                                    resultView.setText(result.substring(0, afterPointIndex-1));
+                                else
+                                    resultView.setText(result);
                             }
                         }
                     }
