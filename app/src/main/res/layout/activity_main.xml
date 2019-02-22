@@ -7,6 +7,13 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".MainActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/my_action_bar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>
     
     <TextView
         android:id="@+id/result_text_view"
@@ -14,7 +21,8 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:textSize="32sp"
-        android:gravity="center_vertical|end" />
+        android:gravity="end"
+        android:padding="8dp"/>
 
 
     <androidx.gridlayout.widget.GridLayout
@@ -27,56 +35,13 @@
 
         <ImageButton
             android:id="@+id/backspace_button"
-            android:minWidth="48dp"
-            android:minHeight="48dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
             android:src="@android:color/black"
             app:layout_row="0"
             app:layout_column="3"
             app:layout_columnWeight="1"
             app:layout_rowWeight="1" />
-
-        <Button
-            android:id="@+id/clear_button"
-            android:minWidth="48dp"
-            android:minHeight="48dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/clear"
-            android:textStyle="bold"
-            app:layout_row="0"
-            app:layout_column="0"
-            app:layout_columnWeight="1"
-            app:layout_rowWeight="1" />
-
-        <Button
-            android:id="@+id/number_zero_button"
-            android:minWidth="48dp"
-            android:minHeight="48dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/number_zero"
-            android:textStyle="bold"
-            app:layout_row="4"
-            app:layout_column="0"
-            app:layout_columnSpan="2"
-            app:layout_columnWeight="2"
-            app:layout_rowWeight="1" />
-
-        <Button
-            android:id="@+id/equal_sign_button"
-            android:minWidth="48dp"
-            android:minHeight="48dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/equal_sign"
-            android:textStyle="bold"
-            app:layout_row="3"
-            app:layout_column="3"
-            app:layout_rowSpan="2"
-            app:layout_columnWeight="1"
-            app:layout_rowWeight="2" />
 
     </androidx.gridlayout.widget.GridLayout>
 
