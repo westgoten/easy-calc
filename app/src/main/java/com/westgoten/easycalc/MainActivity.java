@@ -10,8 +10,12 @@ import androidx.gridlayout.widget.GridLayout;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
     private GridLayout grid;
@@ -55,7 +59,69 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         String expression = resultView.getText().toString();
-                        //TO DO
+                        Pattern pattern = Pattern.compile("\\+{2,}|\\-{2,}|×{2,}|\\.{2,}|÷{2,}|^[÷×\\.]|[÷\\+\\-\\.×]$|\\D\\.[\\d\\D]|\\d\\.\\D|E[÷\\.×]\\d|E\\d+\\.|E$");
+                        Matcher matcher = pattern.matcher(expression);
+
+                        if (matcher.find()) {
+                            //TO DO: Invalid Operation Report
+                        } else {
+                            pattern = Pattern.compile("^[\\+\\-]\\d+\\.\\d+E[\\+\\-]?\\d+|^[\\+\\-]\\d+E[\\+\\-]?\\d+|\\d+\\.\\d+E[\\+\\-]?\\d+|\\d+E[\\+\\-]?\\d+|^[\\+\\-]\\d+\\.\\d+|^[\\+\\-]\\d+|\\d+\\.\\d+|\\d+");
+                            matcher.reset();
+                            matcher.usePattern(pattern);
+
+                            List<String> valuesAndOperationsList = new ArrayList<>();
+                            while (matcher.find()) {
+                                valuesAndOperationsList.add(matcher.group());
+                                int end = matcher.end();
+                                if (end < valuesAndOperationsList.size())
+                                    valuesAndOperationsList.add(expression.substring(end, end+1));
+                            }
+
+                            while (valuesAndOperationsList.size() > 1) {
+                                if (valuesAndOperationsList.contains(getString(R.string.times)) ||
+                                        valuesAndOperationsList.contains(getString(R.string.division))) {
+                                    // TO DO: Synchronize loop increment and list shrinking
+                                    for (int i = 1; i < valuesAndOperationsList.size(); i += 2) {
+                                        String operation = valuesAndOperationsList.get(i);
+                                        double leftValue, rightValue, parcialResult;
+
+                                        if (operation.equals(getString(R.string.times))) {
+                                            leftValue = Double.parseDouble(valuesAndOperationsList.get(i-1));
+                                            rightValue = Double.parseDouble(valuesAndOperationsList.get(i+1));
+                                            parcialResult = leftValue * rightValue;
+                                            addParcialResultToList(parcialResult, i, valuesAndOperationsList);
+
+                                        } else if (operation.equals(getString(R.string.division))) {
+                                            leftValue = Double.parseDouble(valuesAndOperationsList.get(i-1));
+                                            rightValue = Double.parseDouble(valuesAndOperationsList.get(i+1));
+                                            if (rightValue == 0.0) {
+                                                // TO DO: Invalid Operation Report (Division by 0)
+                                                valuesAndOperationsList.clear();
+                                            } else {
+                                                parcialResult = leftValue / rightValue;
+                                                addParcialResultToList(parcialResult, i, valuesAndOperationsList);
+                                            }
+                                        }
+                                    }
+                                }
+
+                                if (valuesAndOperationsList.contains(getString(R.string.plus)) ||
+                                        valuesAndOperationsList.contains(getString(R.string.minus))) {
+                                    // TO DO: Sum and subtraction calculations
+                                }
+                            }
+                        }
+                    }
+
+                    private void addParcialResultToList(double parcialResult, int index, List<String> list) {
+                        if (Double.isInfinite(parcialResult)) {
+                            //TO DO: Limit Exceeded Report
+                            list.clear();
+                        } else {
+                            list.remove(index + 1);
+                            list.remove(index - 1);
+                            list.set(index - 1, String.valueOf(parcialResult));
+                        }
                     }
                 });
 
