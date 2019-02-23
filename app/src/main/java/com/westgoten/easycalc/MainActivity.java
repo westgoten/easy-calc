@@ -2,12 +2,15 @@ package com.westgoten.easycalc;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.text.Layout;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.Toast;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.FragmentManager;
 import androidx.gridlayout.widget.GridLayout;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,12 +27,20 @@ public class MainActivity extends AppCompatActivity {
     private TextView resultView;
     private Map<String, Integer[]> buttonsInfo;
 
+    private InvalidOperationDialogFragment invalidOperationDialogFragment;
+    private LimitExceededDialogFragment limitExceededDialogFragment;
+    private DivisionByZeroDialogFragment divisionByZeroDialogFragment;
+    private FragmentManager fragmentManager;
+
+    private static final String RESULT_VIEW_TEXT = "com.westgoten.MainActivity.RESULT_VIEW_TEXT";
     private static final String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        fragmentManager = getSupportFragmentManager();
 
         Toolbar toolbar = findViewById(R.id.my_action_bar);
         setSupportActionBar(toolbar);
@@ -40,8 +51,14 @@ public class MainActivity extends AppCompatActivity {
             actionBar.hide();
         }
 
+        invalidOperationDialogFragment = new InvalidOperationDialogFragment();
+        limitExceededDialogFragment = new LimitExceededDialogFragment();
+        divisionByZeroDialogFragment = new DivisionByZeroDialogFragment();
+
         grid = findViewById(R.id.grid);
         resultView = findViewById(R.id.result_text_view);
+        if (savedInstanceState != null)
+            resultView.setText(savedInstanceState.getCharSequence(RESULT_VIEW_TEXT));
 
         setButtonsInformation();
         addRemainingButtonsToGrid();
@@ -58,8 +75,15 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putCharSequence(RESULT_VIEW_TEXT, resultView.getText());
+
+        super.onSaveInstanceState(outState);
+    }
+
     private void addRemainingButtonsToGrid() {
-        for (String label : buttonsInfo.keySet()) {
+        for (final String label : buttonsInfo.keySet()) {
             Button button = new Button(this);
             button.setText(label);
             button.setTypeface(null, 1);
@@ -72,11 +96,12 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         String expression = resultView.getText().toString();
-                        Pattern pattern = Pattern.compile("\\+{2,}|\\-{2,}|×{2,}|\\.{2,}|÷{2,}|^[÷×\\.]|[÷\\+\\-\\.×]$|\\D\\.[\\d\\D]|\\d\\.\\D|E[÷\\.×]\\d|E\\d+\\.|E$");
+                        Pattern pattern = Pattern.compile("[\\+\\-÷×\\.]{2,}|^[÷×\\.]|[÷\\+\\-\\.×]$|\\D\\.[\\d\\D]|\\d\\.\\D|\\..\\.|E[÷\\.×]\\d|E\\d+\\.|E$");
                         Matcher matcher = pattern.matcher(expression);
 
                         if (matcher.find()) {
-                            //TO DO: Invalid Operation Report
+                            invalidOperationDialogFragment.show(fragmentManager,
+                                    InvalidOperationDialogFragment.TAG);
                         } else {
                             pattern = Pattern.compile("^[\\+\\-]\\d+\\.\\d+E[\\+\\-]?\\d+|^[\\+\\-]\\d+E[\\+\\-]?\\d+|\\d+\\.\\d+E[\\+\\-]?\\d+|\\d+E[\\+\\-]?\\d+|^[\\+\\-]\\d+\\.\\d+|^[\\+\\-]\\d+|\\d+\\.\\d+|\\d+");
                             matcher.usePattern(pattern);
@@ -111,8 +136,8 @@ public class MainActivity extends AppCompatActivity {
                                             leftValue = Double.parseDouble(valuesAndOperationsList.get(i-1));
                                             rightValue = Double.parseDouble(valuesAndOperationsList.get(i+1));
                                             if (rightValue == 0.0) {
-                                                // TO DO: Invalid Operation Report (Division by 0)
                                                 valuesAndOperationsList.clear();
+                                                divisionByZeroDialogFragment.show(fragmentManager, DivisionByZeroDialogFragment.TAG);
                                             } else {
                                                 parcialResult = leftValue / rightValue;
                                                 addParcialResultToList(parcialResult, i, valuesAndOperationsList);
@@ -163,8 +188,8 @@ public class MainActivity extends AppCompatActivity {
 
                     private void addParcialResultToList(double parcialResult, int index, List<String> list) {
                         if (Double.isInfinite(parcialResult)) {
-                            //TO DO: Limit Exceeded Report
                             list.clear();
+                            limitExceededDialogFragment.show(fragmentManager, LimitExceededDialogFragment.TAG);
                         } else {
                             list.remove(index + 1);
                             list.remove(index - 1);
@@ -182,8 +207,19 @@ public class MainActivity extends AppCompatActivity {
                         String text = ((Button) v).getText().toString();
                         if (text.equals(getString(R.string.clear)))
                             resultView.setText("");
-                        else
+                        else {
+                            int textViewHeight = resultView.getHeight();
+                            int lineHeight = resultView.getLineHeight();
+                            int maxLines = textViewHeight / lineHeight;
                             resultView.append(text);
+                            int lineCount = resultView.getLineCount();
+                            if (lineCount >= maxLines) {
+                                String expression = resultView.getText().toString();
+                                resultView.setText(expression.substring(0, expression.length() - 1));
+                                Toast.makeText(getApplicationContext(), R.string.max_line_number_toast, Toast.LENGTH_SHORT)
+                                        .show();
+                            }
+                        }
                     }
                 });
 

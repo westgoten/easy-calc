@@ -19,4 +19,25 @@
     <string name="equal">=</string>
     <string name="zero">0</string>
     <string name="point">.</string>
+
+    <!-- Invalid operation dialog strings -->
+    <string name="invalid_operation_dialog_title">Operação Inválida</string>
+    <string name="invalid_operation_dialog_message">Por favor, digite uma operação válida.</string>
+    <string name="invalid_operation_dialog_button">OK</string>
+
+    <!-- Limit exceeded dialog strings -->
+    <string name="limit_exceeded_dialog_title">Limite Excedido</string>
+    <string name="limit_exceeded_dialog_message">A magnitude do resultado dessa expressão é demasiadamente grande.</string>
+    <string name="limit_exceeded_dialog_button">OK</string>
+
+    <!-- Division by zero dialog strings -->
+    <string name="division_by_zero_dialog_title">Divisão por zero</string>
+    <string name="division_by_zero_dialog_message">O resultado dessa operação é inválido.</string>
+    <string name="division_by_zero_dialog_button">OK</string>
+
+    <!-- Toast -->
+    <string name="max_line_number_toast">Número máximo de linhas atingido.</string>
+
+    <!-- ImageButton content description -->
+    <string name="backspace_description">Deletar caractere</string>
 </resources>
