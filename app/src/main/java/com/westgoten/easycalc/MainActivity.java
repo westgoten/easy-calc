@@ -1,18 +1,15 @@
 package com.westgoten.easycalc;
 
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.os.Bundle;
-import android.text.Layout;
-import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.Toast;
+import android.widget.*;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentManager;
 import androidx.gridlayout.widget.GridLayout;
-import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
@@ -22,15 +19,22 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@SuppressWarnings("deprecation")
 public class MainActivity extends AppCompatActivity {
     private GridLayout grid;
     private TextView resultView;
+    private ScrollView scrollView;
     private Map<String, Integer[]> buttonsInfo;
 
     private InvalidOperationDialogFragment invalidOperationDialogFragment;
     private LimitExceededDialogFragment limitExceededDialogFragment;
     private DivisionByZeroDialogFragment divisionByZeroDialogFragment;
     private FragmentManager fragmentManager;
+
+    private static final int buttonTextSizeinSp = 18;
+    private static final int buttonMarginInDps = 2;
+
+    private static final int maxNumberOfCharacters = 100;
 
     private static final String RESULT_VIEW_TEXT = "com.westgoten.MainActivity.RESULT_VIEW_TEXT";
     private static final String TAG = "MainActivity";
@@ -55,10 +59,20 @@ public class MainActivity extends AppCompatActivity {
         limitExceededDialogFragment = new LimitExceededDialogFragment();
         divisionByZeroDialogFragment = new DivisionByZeroDialogFragment();
 
+        scrollView = findViewById(R.id.scroll_view);
         grid = findViewById(R.id.grid);
         resultView = findViewById(R.id.result_text_view);
         if (savedInstanceState != null)
             resultView.setText(savedInstanceState.getCharSequence(RESULT_VIEW_TEXT));
+
+        resultView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop,
+                                       int oldRight, int oldBottom) {
+                if (bottom > scrollView.getHeight())
+                    scrollView.scrollTo(0, bottom);
+            }
+        });
 
         setButtonsInformation();
         addRemainingButtonsToGrid();
@@ -73,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
                     resultView.setText(expression.substring(0, expressionLength - 1));
             }
         });
+        backspaceButton.setBackgroundColor(getResources().getColor(R.color.nonDigitButtonColor));
     }
 
     @Override
@@ -83,10 +98,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addRemainingButtonsToGrid() {
-        for (final String label : buttonsInfo.keySet()) {
+        for (String label : buttonsInfo.keySet()) {
             Button button = new Button(this);
             button.setText(label);
+            button.setTextSize(TypedValue.COMPLEX_UNIT_SP, buttonTextSizeinSp);
             button.setTypeface(null, 1);
+            setButtonColor(button);
 
             GridLayout.Spec rowSpec, columnSpec;
             Integer[] position = buttonsInfo.get(label);
@@ -208,17 +225,12 @@ public class MainActivity extends AppCompatActivity {
                         if (text.equals(getString(R.string.clear)))
                             resultView.setText("");
                         else {
-                            int textViewHeight = resultView.getHeight();
-                            int lineHeight = resultView.getLineHeight();
-                            int maxLines = textViewHeight / lineHeight;
-                            resultView.append(text);
-                            int lineCount = resultView.getLineCount();
-                            if (lineCount >= maxLines) {
-                                String expression = resultView.getText().toString();
-                                resultView.setText(expression.substring(0, expression.length() - 1));
-                                Toast.makeText(getApplicationContext(), R.string.max_line_number_toast, Toast.LENGTH_SHORT)
+                            int inputLength = resultView.getText().length();
+                            if (inputLength < maxNumberOfCharacters) {
+                                resultView.append(text);
+                            } else
+                                Toast.makeText(getApplicationContext(), R.string.max_char_number_toast, Toast.LENGTH_SHORT)
                                         .show();
-                            }
                         }
                     }
                 });
@@ -236,7 +248,26 @@ public class MainActivity extends AppCompatActivity {
             layoutParams.width = 0;
             layoutParams.height = 0;
 
+            final float scale = getResources().getDisplayMetrics().density;
+            int marginInPixels = (int) (buttonMarginInDps * scale + 0.5f);
+            layoutParams.setMargins(marginInPixels, marginInPixels, marginInPixels, marginInPixels);
+
             grid.addView(button, layoutParams);
+        }
+    }
+
+    private void setButtonColor(Button button) {
+        String buttonLabel = button.getText().toString();
+        Resources resources = getResources();
+
+        if (buttonLabel.equals(getString(R.string.clear))) {
+            button.setBackgroundColor(resources.getColor(R.color.clearButtonColor));
+        } else if (buttonLabel.equals(getString(R.string.equal))) {
+            button.setBackgroundColor(resources.getColor(R.color.equalButtonColor));
+        } else if (Character.isDigit(buttonLabel.charAt(0))) {
+            button.setBackgroundColor(resources.getColor(R.color.digitButtonColor));
+        } else {
+            button.setBackgroundColor(resources.getColor(R.color.nonDigitButtonColor));
         }
     }
 

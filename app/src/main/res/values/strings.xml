@@ -36,7 +36,7 @@
     <string name="division_by_zero_dialog_button">OK</string>
 
     <!-- Toast -->
-    <string name="max_line_number_toast">Número máximo de linhas atingido.</string>
+    <string name="max_char_number_toast">Número máximo de caracteres atingido.</string>
 
     <!-- ImageButton content description -->
     <string name="backspace_description">Deletar caractere</string>
