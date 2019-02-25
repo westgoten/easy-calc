@@ -1,13 +1,13 @@
 package com.westgoten.easycalc;
 
 import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.*;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.gridlayout.widget.GridLayout;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@SuppressWarnings("deprecation")
 public class MainActivity extends AppCompatActivity {
     private GridLayout grid;
     private TextView resultView;
@@ -87,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
                     resultView.setText(expression.substring(0, expressionLength - 1));
             }
         });
-        backspaceButton.setBackgroundColor(getResources().getColor(R.color.nonDigitButtonColor));
+        backspaceButton.setBackgroundColor(ContextCompat.getColor(this, R.color.nonDigitButtonColor));
     }
 
     @Override
@@ -229,7 +228,7 @@ public class MainActivity extends AppCompatActivity {
                             if (inputLength < maxNumberOfCharacters) {
                                 resultView.append(text);
                             } else
-                                Toast.makeText(getApplicationContext(), R.string.max_char_number_toast, Toast.LENGTH_SHORT)
+                                Toast.makeText(v.getContext(), R.string.max_char_number_toast, Toast.LENGTH_SHORT)
                                         .show();
                         }
                     }
@@ -258,16 +257,15 @@ public class MainActivity extends AppCompatActivity {
 
     private void setButtonColor(Button button) {
         String buttonLabel = button.getText().toString();
-        Resources resources = getResources();
 
         if (buttonLabel.equals(getString(R.string.clear))) {
-            button.setBackgroundColor(resources.getColor(R.color.clearButtonColor));
+            button.setBackgroundColor(ContextCompat.getColor(this, R.color.clearButtonColor));
         } else if (buttonLabel.equals(getString(R.string.equal))) {
-            button.setBackgroundColor(resources.getColor(R.color.equalButtonColor));
+            button.setBackgroundColor(ContextCompat.getColor(this, R.color.equalButtonColor));
         } else if (Character.isDigit(buttonLabel.charAt(0))) {
-            button.setBackgroundColor(resources.getColor(R.color.digitButtonColor));
+            button.setBackgroundColor(ContextCompat.getColor(this, R.color.digitButtonColor));
         } else {
-            button.setBackgroundColor(resources.getColor(R.color.nonDigitButtonColor));
+            button.setBackgroundColor(ContextCompat.getColor(this, R.color.nonDigitButtonColor));
         }
     }
 
