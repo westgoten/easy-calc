@@ -1,7 +1,7 @@
 # Easy Calc
 *A (not so) simple calculator for Android*
 
-<img src="./easy_calc_demo.gif" width="500">
+<img src="./easy_calc_demo.gif" width="540">
 
 ## How to run
 1) Clone the repository
